@@ -1,129 +1,89 @@
 const app = document.querySelector(".root");
-const timer = document.querySelector(".main");
-const list = document.querySelector(".list");
-
-
-
-
-class HelloMessage extends React.Component {
-
-
-
-
-
-    render() {
-        return (
-            <div>
-                <p>Xin chào: {this.props.name}</p>
-            </div>
-        );
-    }
-}
-
-
-
-
-ReactDOM.render(<HelloMessage name="Quang" />, app)
-
-
-
-class Timer extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            seconds: 0
-        }
-
-    }
-    tick() {
-        this.setState({
-            seconds: this.state.seconds + 1
-        })
-    }
-    componentDidMount() {
-        this.time = setInterval(() => {
-            this.tick()
-        }, 1000);
-    }
-
-    componentWillunmount() {
-        clearInterval(this.time)
-    }
-
-    render() {
-        return (
-            <div>
-                Giây: {this.state.seconds}
-
-            </div>
-        );
-    }
-}
-ReactDOM.render(<Timer />, timer)
-
-
-
 
 class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            items: [],
-            text: ''
+            text: '',
+            listTodo: [],
+
         }
-        this.handleChange = this.handleChange.bind(this)
-        this.handleSubmit = this.handleSubmit.bind(this)
+    }
+    onchangeTask = (text) => {
+
+        this.setState({
+            text: text.target.value
+        })
+        // console.log(text);
+    }
+    clickButton = () => {
+        let itemTask = {
+            id: Date.now(),
+            taskTodo: this.state.text
+        }
+
+        // console.log(itemTask);
+        this.setState({
+            listTodo: this.state.listTodo.concat([itemTask]),
+            text: "",
+        })
+
+    }
+    buttonClear = () => {
+
+        this.setState({ listTodo: [] })
+    }
+    deleteTask = (id) => {
+        let user = [...this.state.listTodo]
+        let userDelete = user.filter(item => item.id != id)
+        this.setState({
+            listTodo: userDelete
+        })
+
     }
 
     render() {
+        const { text, listTodo } = this.state
+
         return (
-            <div>
-                <h3>Danh sách công việc</h3>
-                <TodoApp items={this.state.items} />
-                <form onSubmit={this.handleSubmit}>
-                    <label>Bạn cần làm gì</label>
-                    <input type="text" value={this.state.text} onChange={this.handleChange} />
-                    <button>Thêm #{this.state.items.length + 1}</button>
-                </form>
+            <div className="wrapper">
+                <header>Todo App</header>
+                <div className="inputField">
+                    <input type="text" placeholder="Add new Task" onChange={this.onchangeTask} value={text} />
+                    <button disabled={!this.state.text} className={this.state.text ? 'button' : ""} onClick={this.clickButton}>Add Task</button>
+
+                </div>
+                {this.state.listTodo.map((item, index) => {
+                    return <TodoApp key={index} item={item} deleteTask={() => this.deleteTask(item.id)} />
+                })}
+
+
+                <div className="footer">
+                    <p className="content">You have <span className="pendingTask">{this.state.listTodo.length}</span> pending task</p>
+                    <button className={this.state.listTodo.length ? 'buttonClears' : ""} onClick={this.buttonClear}>Clear all</button>
+                </div>
             </div>
+
         );
     }
-    handleChange(e) {
-        this.setState({
-            text: e.target.value
-        })
-    }
-
-    handleSubmit(e) {
-        e.preventDefault()
-        if (this.state.text.length === 0) {
-            return;
-        }
-        const newItem = {
-            text: this.state.text,
-            id: Date.now()
-        }
-        this.setState(state => ({
-            items: state.items.concat(newItem), text: ''
-        }))
-    }
-
 }
 
 
 class TodoApp extends React.Component {
+
     render() {
+
         return (
-            <ul>
-                {this.props.items.map(item => (
-                    <li key={item.id}>{item.text}</li>
-                ))}
-            </ul>
+            < ul className="todoList" >
+                <li >
+                    {this.props.item.taskTodo}
+                    {<span onClick={this.props.deleteTask} className="icon" ><i className="fas fa-trash-alt"></i>
+                    </span>}
+                </li>
+
+            </ul >
         );
     }
 }
 
-
-
-ReactDOM.render(<App />, list)
-
+ReactDOM.render(<App />, app)
